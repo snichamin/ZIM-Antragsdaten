@@ -966,7 +966,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "checkbox-1": document.getElementById("checkbox-1").checked,
         "checkbox-2": document.getElementById("checkbox-2").checked,
         "-checkbox-3000": document.getElementById("-checkbox-3000").checked,
-        "-checkbox-4": document.getElementById("-checkbox-4").checked,
+        "-checkbox-4000": document.getElementById("-checkbox-4000").checked,
         "-checkbox-5000": document.getElementById("-checkbox-5000").checked,
 
         "checkbox-text-1": document.getElementById("checkbox-text-1").checked,
@@ -2535,6 +2535,7 @@ document.addEventListener('keydown', (e) => {
   window.applyDeadlineColor = applyColor;
 })();
 // >>>ENDE<<< - Ausfüllen bis - prüfen
+
 
 
 
