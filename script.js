@@ -965,20 +965,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const states = {
         "checkbox-1": document.getElementById("checkbox-1").checked,
         "checkbox-2": document.getElementById("checkbox-2").checked,
-        "-checkbox-3": document.getElementById("-checkbox-3").checked,
+        "-checkbox-3000": document.getElementById("-checkbox-3000").checked,
         "-checkbox-4": document.getElementById("-checkbox-4").checked,
-        "-checkbox-5000": document.getElementById("-checkbox-4").checked,
+        "-checkbox-5000": document.getElementById("-checkbox-5000").checked,
 
-        "-checkbox-5000": document.getElementById("checkbox-text-1").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-2").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-3").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-4").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-5").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-6").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-7").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-8").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-9").checked,
-        "-checkbox-5000": document.getElementById("checkbox-text-10").checked
+        "checkbox-text-1": document.getElementById("checkbox-text-1").checked,
+        "checkbox-text-2": document.getElementById("checkbox-text-2").checked,
+        "checkbox-text-3": document.getElementById("checkbox-text-3").checked,
+        "checkbox-text-4": document.getElementById("checkbox-text-4").checked,
+        "checkbox-text-5": document.getElementById("checkbox-text-5").checked,
+        "checkbox-text-6": document.getElementById("checkbox-text-6").checked,
+        "checkbox-text-7": document.getElementById("checkbox-text-7").checked,
+        "checkbox-text-8": document.getElementById("checkbox-text-8").checked,
+        "checkbox-text-9": document.getElementById("checkbox-text-9").checked,
+        "checkbox-text-10": document.getElementById("checkbox-text-10").checked
     };
 
     document.getElementById("checkboxStates").value = JSON.stringify(states);
@@ -2535,6 +2535,7 @@ document.addEventListener('keydown', (e) => {
   window.applyDeadlineColor = applyColor;
 })();
 // >>>ENDE<<< - Ausfüllen bis - prüfen
+
 
 
 
