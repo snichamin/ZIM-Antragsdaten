@@ -68,6 +68,35 @@ panels.forEach(p => p.classList.remove('active'));
 
 
 
+// >>>START<<< IBAN Zeichen nach Import aktualisieren
+document.addEventListener("click", (e) => {
+  const menuItem = e.target.closest('.menu-item[data-target]');
+  if (!menuItem) return;
+
+  const panelId = menuItem.dataset.target;
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+
+  // kurz warten, bis das Panel 'active' ist
+  setTimeout(() => {
+    if (!panel.classList.contains("active")) return;
+
+    // Zeichenzähler aktualisieren (nutzt deine bestehenden 'input'-Listener)
+    panel.querySelectorAll(".counted-input").forEach(inp => {
+      inp.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    // IBAN aktualisieren (nutzt deinen bestehenden 'input'-Listener)
+    const ibanInput = panel.querySelector("#iban");
+    if (ibanInput) {
+      ibanInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }, 0);
+});
+// >>>ENDE<<< IBAN Zeichen nach Import aktualisieren
+
+
+
 // >>>START<<< - IBAN-Berechnung
     document.addEventListener("DOMContentLoaded", () => {
     const ibanInput = document.getElementById("iban");
@@ -75,27 +104,27 @@ panels.forEach(p => p.classList.remove('active'));
     const MAX_IBAN_LENGTH = 22;
 
     ibanInput.addEventListener("input", () => {
-        // 1️⃣ Cursor speichern
+        // 1 Cursor speichern
         let cursorPos = ibanInput.selectionStart;
 
-        // 2️⃣ Rohwert: nur Buchstaben/Zahlen, alles uppercase
+        // 2 Rohwert: nur Buchstaben/Zahlen, alles uppercase
         let raw = ibanInput.value.replace(/\s/g, "").replace(/[^A-Z0-9]/gi, "").toUpperCase();
 
-        // 3️⃣ Auf 22 Zeichen begrenzen
+        // 3 Auf 22 Zeichen begrenzen
         if (raw.length > MAX_IBAN_LENGTH) raw = raw.slice(0, MAX_IBAN_LENGTH);
 
-        // 4️⃣ In 4er-Gruppen formatieren
+        // In 4er-Gruppen formatieren
         let formatted = raw.replace(/(.{4})/g, "$1 ").trim();
 
-        // 5️⃣ Wert im Input setzen
+        // Wert im Input setzen
         ibanInput.value = formatted;
 
-        // 6️⃣ Cursor korrigieren (Verschiebung durch Leerzeichen)
+        // Cursor korrigieren (Verschiebung durch Leerzeichen)
         let spacesBefore = (formatted.slice(0, cursorPos).match(/\s/g) || []).length;
         let newCursorPos = cursorPos + spacesBefore;
         ibanInput.setSelectionRange(newCursorPos, newCursorPos);
 
-        // 7️⃣ Char-Counter aktualisieren
+        // Char-Counter aktualisieren
         ibanCounter.textContent = raw.length;
         
     });
@@ -963,8 +992,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function prepareCheckboxStates() {
 
     const states = {
-        "checkbox-1": document.getElementById("checkbox-1").checked,
-        "checkbox-2": document.getElementById("checkbox-2").checked,
+        "checkbox-1111": document.getElementById("checkbox-1111").checked,
+        "checkbox-2222": document.getElementById("checkbox-2222").checked,
         "-checkbox-3000": document.getElementById("-checkbox-3000").checked,
         "-checkbox-4000": document.getElementById("-checkbox-4000").checked,
         "-checkbox-5000": document.getElementById("-checkbox-5000").checked,
@@ -1163,6 +1192,31 @@ document.getElementById("importCsvBtn").addEventListener("click", function() {
 
             // NEU: Optional globaler Hook – falls du irgendwo zuhörst (z. B. für Glocke)
             document.dispatchEvent(new CustomEvent('csv:imported'));
+
+
+            // 1) Alle Menü-Items sequenziell "anklicken"
+                const items = Array.from(document.querySelectorAll('.menu-item'));
+                const panels = Array.from(document.querySelectorAll('.panel'));
+
+                items.forEach((el, i) => setTimeout(() => el.click(), i * 120));
+
+                // 2) Nach dem letzten Klick: alle wieder inaktiv
+                const total = items.length * 120;
+                setTimeout(() => {
+                items.forEach(i => i.classList.remove('active'));
+                panels.forEach(p => p.classList.remove('active'));
+                document.activeElement?.blur?.(); // Fokus wegnehmen, falls aktiv-Styling über Fokus kommt
+                }, total + 50); // kleiner Puffer
+
+
+
+
+
+
+
+
+
+
 
 
             alert("CSV importiert!");
@@ -1731,52 +1785,69 @@ document.addEventListener("DOMContentLoaded", function () {
 // START - Accordions Schrittweise ein- und ausblenden
 document.addEventListener("DOMContentLoaded", () => {
 
-    const btnPlus = document.getElementById("btn-plus");
-    const btnMinus = document.getElementById("btn-minus");
-    const container = document.getElementById("projects-container");
-    const storageKey = "projectsVisibleCount"; // Speicher-Key
+  const btnPlus = document.getElementById("btn-plus");
+  const btnMinus = document.getElementById("btn-minus");
+  const container = document.getElementById("projects-container");
+  const storageKey = "projectsVisibleCount"; // Speicher-Key
 
-    if (!btnPlus || !btnMinus || !container) return;
+  if (!btnPlus || !btnMinus || !container) return;
 
-    function getAccordions() {
-        return Array.from(container.querySelectorAll('.project-accordion[data-index]'))
-                    .sort((a,b) => parseInt(a.dataset.index) - parseInt(b.dataset.index));
-    }
+  function getAccordions() {
+    return Array.from(container.querySelectorAll('.project-accordion[data-index]'))
+                .sort((a,b) => parseInt(a.dataset.index) - parseInt(b.dataset.index));
+  }
 
-    function isHidden(el) {
-        return window.getComputedStyle(el).display === "none";
-    }
+  function isHidden(el) {
+    return window.getComputedStyle(el).display === "none";
+  }
 
-    function saveVisibleCount() {
-        const count = getAccordions().filter(a => !isHidden(a)).length;
-        localStorage.setItem(storageKey, count);
-    }
+  function saveVisibleCount() {
+    const count = getAccordions().filter(a => !isHidden(a)).length;
+    localStorage.setItem(storageKey, count);
+  }
 
-    function restoreVisible() {
-        const count = parseInt(localStorage.getItem(storageKey)) || 0;
-        const accordions = getAccordions();
-        accordions.forEach((a, i) => {
-            a.style.display = i < count ? "block" : "none";
-        });
-    }
+  // NEU: Event nach Sichtbarkeitsänderung
+  function emitVisibilityChange() {
+    const visibleAccs = getAccordions().filter(a => !isHidden(a));
+    document.dispatchEvent(new CustomEvent("projects:visibilitychange", {
+      detail: {
+        count: visibleAccs.length,
+        ids: visibleAccs.map(a => a.id || a.dataset.index)
+      }
+    }));
+  }
 
-    function showNext() {
-        const next = getAccordions().find(a => isHidden(a));
-        if (next) next.style.display = "block";
-        saveVisibleCount();
-    }
+  function restoreVisible() {
+    const count = parseInt(localStorage.getItem(storageKey)) || 0;
+    const accordions = getAccordions();
+    accordions.forEach((a, i) => {
+      a.style.display = i < count ? "block" : "none";
+    });
+    // NEU: direkt nach Restore melden
+    emitVisibilityChange();
+  }
 
-    function hideLast() {
-        const last = getAccordions().reverse().find(a => !isHidden(a));
-        if (last) last.style.display = "none";
-        saveVisibleCount();
-    }
+  function showNext() {
+    const next = getAccordions().find(a => isHidden(a));
+    if (next) next.style.display = "block";
+    saveVisibleCount();
+    // NEU: melden
+    emitVisibilityChange();
+  }
 
-    btnPlus.addEventListener("click", showNext);
-    btnMinus.addEventListener("click", hideLast);
+  function hideLast() {
+    const last = getAccordions().reverse().find(a => !isHidden(a));
+    if (last) last.style.display = "none";
+    saveVisibleCount();
+    // NEU: melden
+    emitVisibilityChange();
+  }
 
-    // Restore auf Basis von localStorage
-    restoreVisible();
+  btnPlus.addEventListener("click", showNext);
+  btnMinus.addEventListener("click", hideLast);
+
+  // Restore auf Basis von localStorage
+  restoreVisible();
 
 });
 // ENDE - Accordions Schrittweise ein- und ausblenden
@@ -2068,7 +2139,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-// >>>START<<< - Projekt-Accordion, Validierung und Header-Vorschau (komplett)
+
+// >>>START<<< - Projekt-Accordion, Validierung und Header-Vorschau (Patch für Auto-Scroll)
 document.addEventListener("DOMContentLoaded", () => {
   const MAX_PREVIEW_LENGTH = 100;
 
@@ -2079,6 +2151,58 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".project-accordion").forEach(acc => {
     if (typeof acc.__validate === "function") acc.__validate(false);
   });
+
+  // NEU: Scroll-Helfer
+  function getScrollContainer(el) {
+    let p = el.parentElement;
+    while (p) {
+      const cs = getComputedStyle(p);
+      const oy = cs.overflowY;
+      if ((oy === "auto" || oy === "scroll") && p.scrollHeight > p.clientHeight) return p;
+      p = p.parentElement;
+    }
+    // Fallback: Window
+    return document.scrollingElement || document.documentElement;
+  }
+
+  function scrollAccordionIntoView(accordion, content, opts = {}) {
+    const offset = Number(opts.offset ?? document.body.dataset.stickyHeaderHeight ?? 70); // konfigurierbar
+    const nudge = Number(opts.nudge ?? 12); // kleiner "Nudge", wenn schon sichtbar
+
+    const sc = getScrollContainer(accordion);
+    const rect = content.getBoundingClientRect();
+
+    // innerViewport-Test: ist Content schon gut sichtbar?
+    const alreadyVisible =
+      rect.top >= (0 + offset) &&
+      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
+
+    requestAnimationFrame(() => {
+      // Window-Scroll?
+      const isWindow =
+        sc === document.scrollingElement ||
+        sc === document.documentElement ||
+        sc === document.body;
+
+      if (isWindow) {
+        const targetTop = window.scrollY + rect.top - offset;
+        if (alreadyVisible) {
+          if (nudge > 0) window.scrollBy({ top: nudge, behavior: "smooth" });
+        } else {
+          window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+        }
+      } else {
+        // Container-Scroll
+        const scRect = sc.getBoundingClientRect();
+        const targetTop = sc.scrollTop + (rect.top - scRect.top) - offset;
+        if (alreadyVisible) {
+          if (nudge > 0) sc.scrollBy({ top: nudge, behavior: "smooth" });
+        } else {
+          sc.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+        }
+      }
+    });
+  }
 
   function setupAccordion(accordion) {
     const header = accordion.querySelector(".projekte-header");
@@ -2108,7 +2232,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function isVisibleNow(el) {
       return el.offsetParent !== null && window.getComputedStyle(el).display !== "none";
     }
-    // Sichtbar, wenn Accordion geöffnet wäre (für Icon-Validität im geschlossenen Zustand)
     function isVisibleWhenOpen(el) {
       const wasHidden = content.classList.contains("hidden-projekte");
       if (!wasHidden) return isVisibleNow(el);
@@ -2143,26 +2266,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Feld-Gültigkeit
-    // mode = 'icon' (so als ob offen), 'ui' (aktueller Sichtbarkeitszustand)
     function fieldValid(el, mode = "ui") {
       const type = el.dataset.validate;
       const v = raw(el);
       const visible = (mode === "icon") ? isVisibleWhenOpen(el) : isVisibleNow(el);
 
-      if (type === "on") {
-        return !isEmpty(v);
-      }
-      if (type === "visible") {
-        return !visible ? true : !isEmpty(v);
-      }
-      if (type === "zero") {
-        // zero vollständig, wenn sichtbar UND Wert != 0
-        return !visible ? true : asNumber(v) !== 0;
-      }
+      if (type === "on") return !isEmpty(v);
+      if (type === "visible") return !visible ? true : !isEmpty(v);
+      if (type === "zero") return !visible ? true : asNumber(v) !== 0;
       return true;
     }
 
-    // UI-Partial prüfen (für Schließen-Moment)
     function computePartialUI() {
       const applicableFields = fields.filter(f => {
         const t = f.dataset.validate;
@@ -2178,11 +2292,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return anyFilled && anyInvalid;
     }
 
-    // Rote Umrandung setzen/löschen (inline, damit nichts kaputt geht)
     function setErrorBorder(el, on) {
       el.style.border = on ? "1px solid red" : "";
-
-      // Optional: korrespondierendes TD für zero-Felder einfärben
       if (el.dataset.validate === "zero" && el.name) {
         const pMatch = el.name.match(/P(\d+)/);
         if (pMatch) {
@@ -2192,27 +2303,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Zentrale Validierung
     function validate(justOpened = false) {
-      // 1) Icon-Status: prüfe Gültigkeit „sichtbar wenn offen“
       const allOk = fields.every(f => fieldValid(f, "icon"));
       statusIcon.classList.toggle("success", allOk);
       statusIcon.classList.toggle("error", !allOk);
 
-      // 2) Keine roten Rahmen im geschlossenen Zustand
       if (!isOpen()) {
         fields.forEach(f => setErrorBorder(f, false));
         return;
       }
 
-      // 3) Applicable-Felder (on immer; visible/zero nur sichtbar)
       const applicableFields = fields.filter(f => {
         const t = f.dataset.validate;
         if (t === "visible" || t === "zero") return isVisibleNow(f);
         return true;
       });
 
-      // 4) „Partial“-Erkennung im offenen Zustand
       const anyFilled = applicableFields.some(f => {
         const t = f.dataset.validate;
         const v = raw(f);
@@ -2221,15 +2327,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const anyInvalid = applicableFields.some(f => !fieldValid(f, "ui"));
       const partial = anyFilled && anyInvalid;
 
-      // 5) Alles leer: keine roten Rahmen
       if (!anyFilled) {
         applicableFields.forEach(f => setErrorBorder(f, false));
         return;
       }
 
-      // 6) Rahmen-Logik
-      //    - Erste Öffnung: Nur „touched“ Felder rot (keine automatische roten Rahmen).
-      //    - Nach Schließen+Wieder-Öffnen mit Teilbefüllung: alle unvollständigen Felder rot.
       fields.forEach(f => {
         const invalidNow = !fieldValid(f, "ui");
         const t = f.dataset.validate;
@@ -2243,24 +2345,38 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Exponiere Validierung
     accordion.__validate = validate;
+    accordion.validateNow = () => validate(false);
 
-    // Header-Click: auf/zu + Logik für „Errors scharf schalten“
+    function reevalDateDependents() {
+      const endInputs = accordion.querySelectorAll('input[name^="p_ende_"]');
+      endInputs.forEach(inp => {
+        inp.dispatchEvent(new Event("input", { bubbles: true }));
+        inp.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    }
+
     header.addEventListener("click", () => {
       const willOpen = content.classList.contains("hidden-projekte");
 
-      // Wir schließen: partial-Status merken
       if (!willOpen) {
         partialOnClose = computePartialUI();
       }
 
-      // Auf-/Zuklappen
       content.classList.toggle("hidden-projekte");
       header.classList.toggle("open");
 
-      // Beim Öffnen: ggf. automatische Fehlermarkierung aktivieren
       if (willOpen) {
+        // Accordion öffnet → zuerst datumsabhängige Inhalte neu berechnen
+        accordion.dispatchEvent(new CustomEvent("accordion:opened", { bubbles: true }));
+        reevalDateDependents();
+
+        // NEU: sanft zum Inhalt scrollen
+        scrollAccordionIntoView(accordion, content, {
+          offset: Number(document.body.dataset.stickyHeaderHeight || 70), // ggf. Sticky-Header-Höhe
+          nudge: 12
+        });
+
         if (partialOnClose) errorsArmed = true;
         validate(true);
       } else {
@@ -2268,7 +2384,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Feld-Events: live validieren + „touched“ markieren
     fields.forEach(f => {
       ["input", "change", "blur"].forEach(evt =>
         f.addEventListener(evt, () => {
@@ -2277,7 +2392,6 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       );
 
-      // Zero-Felder: abhängige Inputs live beobachten
       if (f.dataset.validate === "zero" && f.name) {
         const suffix = f.name.match(/P(\d+)/)?.[1];
         if (suffix) {
@@ -2303,11 +2417,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Initiale Validierung
+    // Initial
+    reevalDateDependents();
     validate(false);
   }
 });
-// >>>ENDE<<< - Projekt-Accordion, Validierung und Header-Vorschau
+// >>>ENDE<<< - Projekt-Accordion, Validierung und Header-Vorschau (Patch für Auto-Scroll)
+
+
 
 
 
@@ -2317,29 +2434,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const selectEl   = document.getElementById('select-100');       // Ja/Nein
   const checkboxEl = document.getElementById('-checkbox-5000');   // Eigene Liste
 
-  // Menü-Icon gezielt ansteuern
+  // Menü-Icon und -Item
   const menuIcon = document.querySelector('.menu-item[data-target="projekte"] .status-icon');
+  const menuItem = document.querySelector('.menu-item[data-target="projekte"]');
+
+  // Container der Projekte (falls vorhanden, verbessert Selektion)
+  const container = document.getElementById('projects-container');
+
+  // Optional: Fallback – falls du Plus/Minus-Buttons hast
+  const btnPlus  = document.getElementById('btn-plus');
+  const btnMinus = document.getElementById('btn-minus');
 
   if (!menuIcon) {
     console.warn('Förderprojekte-Statusicon im Menü nicht gefunden.');
     return;
   }
 
-  // Sichtbarkeit prüfen
-  const isVisible = (el) => !!(el && el.offsetParent !== null);
+  // Sichtbarkeit prüfen (robust)
+  const isVisible = (el) => {
+    if (!el) return false;
+    const cs = window.getComputedStyle(el);
+    if (el.hidden || cs.display === 'none' || cs.visibility === 'hidden') return false;
+    return el.offsetParent !== null;
+  };
 
-  // Mindestens ein sichtbares Accordion mit grünem Icon?
-  function anyVisibleGreenAccordion() {
-    const accs = document.querySelectorAll('.project-accordion');
+  // ALLE sichtbaren Accordions müssen grün sein
+  function allVisibleAccordionsGreen() {
+    const scope = container || document;
+    const accs = scope.querySelectorAll('.project-accordion');
+    let visibleCount = 0;
+
     for (const acc of accs) {
       if (!isVisible(acc)) continue;
+      visibleCount++;
+
       const icon = acc.querySelector('.status-icon');
-      if (icon && icon.classList.contains('success')) return true;
+      if (!icon || !icon.classList.contains('success')) {
+        // Sobald eines nicht grün ist → unvollständig
+        return false;
+      }
     }
-    return false;
+    // True nur, wenn mindestens ein sichtbares Accordion existiert und alle davon grün sind
+    return visibleCount > 0;
   }
 
-  // Select-Wert (ja/nein; Platzhalter wie „wählen“ wird als unvollständig behandelt)
+  // Select-Wert (ja/nein; Platzhalter wie „wählen“ => unvollständig)
   function getSelectValue() {
     if (!selectEl) return '';
     return (selectEl.value || '').trim().toLowerCase();
@@ -2351,7 +2490,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sel === 'nein') return true;
     if (sel === 'ja') {
       if (checkboxEl && checkboxEl.checked) return true;
-      return anyVisibleGreenAccordion();
+      return allVisibleAccordionsGreen();
     }
     return false;
   }
@@ -2361,27 +2500,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const complete = isPanelComplete();
     menuIcon.classList.toggle('success', complete);
     menuIcon.classList.toggle('error', !complete);
-    // Optional: Tooltip
     menuIcon.title = complete ? 'Vollständig' : 'Unvollständig';
 
-    // Optional: Event für weitere Integrationen
     document.dispatchEvent(new CustomEvent('foerderprojekte:statuschange', {
       detail: { complete }
     }));
   }
 
-  // Event-Wiring
+  // Event-Wiring (Select/Checkbox)
   if (selectEl)   selectEl.addEventListener('change', updateUI);
   if (checkboxEl) checkboxEl.addEventListener('change', updateUI);
 
   // Eingaben in Accordions beobachten (damit grüne Icons/Validität einfließen)
   function armAccordionInputListeners() {
-    document.querySelectorAll('.project-accordion').forEach(acc => {
+    const scope = container || document;
+    scope.querySelectorAll('.project-accordion').forEach(acc => {
       acc.addEventListener('input', updateUI,  { capture: true });
       acc.addEventListener('change', updateUI, { capture: true });
     });
+
     // Sichtbarkeitswechsel durch Header-Klicks berücksichtigen
-    document.querySelectorAll('.project-accordion .projekte-header').forEach(h => {
+    scope.querySelectorAll('.project-accordion .projekte-header').forEach(h => {
+      if (h.dataset._fpHeaderBound === '1') return;
+      h.dataset._fpHeaderBound = '1';
       h.addEventListener('click', () => setTimeout(updateUI, 0)); // nach toggle
     });
   }
@@ -2389,26 +2530,71 @@ document.addEventListener('DOMContentLoaded', () => {
   // Icon-Klassen direkt beobachten (success/error)
   const iconMutationObserver = new MutationObserver(updateUI);
   function observeIcons() {
-    document.querySelectorAll('.project-accordion .status-icon').forEach(icon => {
+    const scope = container || document;
+    scope.querySelectorAll('.project-accordion .status-icon').forEach(icon => {
       iconMutationObserver.observe(icon, { attributes: true, attributeFilter: ['class'] });
     });
   }
 
-  // Reagiere auf Plus/Minus (DOM-Änderungen)
-  const root = document.body;
+  // NEU: Sichtbarkeitsänderungen einzelner Accordions beobachten (display none/block etc.)
+  const visibilityObserver = new MutationObserver((mutations) => {
+    // Attributänderung an einem Accordion → sofort bewerten
+    let relevant = false;
+    for (const m of mutations) {
+      if (m.type === 'attributes' && (m.attributeName === 'style' || m.attributeName === 'hidden' || m.attributeName === 'class')) {
+        relevant = true;
+        // keine break – wir wollen alles prüfen
+      }
+    }
+    if (relevant) updateUI();
+  });
+
+  function observeAccordionVisibility() {
+    const scope = container || document;
+    scope.querySelectorAll('.project-accordion').forEach(acc => {
+      if (acc.dataset._fpVisObs === '1') return;
+      acc.dataset._fpVisObs = '1';
+      visibilityObserver.observe(acc, {
+        attributes: true,
+        attributeFilter: ['style', 'hidden', 'class']
+      });
+    });
+  }
+
+  // DOM-Änderungen: neue Accordions, neue Icons, etc.
   const domObserver = new MutationObserver(() => {
     armAccordionInputListeners();
     observeIcons();
+    observeAccordionVisibility();
     updateUI();
   });
-  domObserver.observe(root, { childList: true, subtree: true });
+  domObserver.observe(container || document.body, { childList: true, subtree: true });
+
+  // Optional: direkt bei Klick auf Menü-Item neu bewerten
+  if (menuItem) {
+    menuItem.addEventListener('click', () => setTimeout(updateUI, 0));
+  }
+
+  // Optional: Fallback – sofort nach Plus/Minus-Klick bewerten
+  if (btnPlus)  btnPlus.addEventListener('click', () => setTimeout(updateUI, 0));
+  if (btnMinus) btnMinus.addEventListener('click', () => setTimeout(updateUI, 0));
+
+  // Optional: Wenn ein externes Event gesendet wird
+  document.addEventListener("projects:visibilitychange", () => {
+    armAccordionInputListeners();
+    observeIcons();
+    observeAccordionVisibility();
+    updateUI();
+  });
 
   // Initial
   armAccordionInputListeners();
   observeIcons();
+  observeAccordionVisibility();
   updateUI();
 });
 // >>>ENDE<<< - Förderprojekte: Panel-Validierung über Menü-Icon
+
 
 
 // >>>START<<< - Glöcke
@@ -2535,8 +2721,6 @@ document.addEventListener('keydown', (e) => {
   window.applyDeadlineColor = applyColor;
 })();
 // >>>ENDE<<< - Ausfüllen bis - prüfen
-
-
 
 
 
